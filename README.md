@@ -126,8 +126,9 @@ Then restart Tabby.
 
 ### Changelog
 
-- See [`CHANGELOG.md`](CHANGELOG.md)
-
+- **0.2.4**
+  - Fix: OS drag-and-drop from Explorer
+  - Fix: Multiple files drag-and-drop between panes works again.
 - **0.2.3**
   - Fix: Remote folders drag-and-drop (Remote → Local) works again.
   - Feature: Replace confirmation is now symmetric (both Local → Remote and Remote → Local).
