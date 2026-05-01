@@ -126,6 +126,9 @@ Then restart Tabby.
 
 ### Changelog
 
+- **0.2.5**
+  - Fix: SFTP UI tabs are not persisted across Tabby restarts. (Blank tabs when reopening Tabby)
+
 - **0.2.4**
   - Fix: OS drag-and-drop from Explorer
   - Fix: Multiple files drag-and-drop between panes works again.

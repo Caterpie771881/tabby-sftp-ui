@@ -6,9 +6,11 @@ import * as crypto from 'crypto'
 
 import { Component, Injector, OnInit, HostListener } from '@angular/core'
 import { AppService, BaseTabComponent, FileTransfer, FileUpload, PlatformService, ProfilesService } from 'tabby-core'
+import type { RecoveryToken } from 'tabby-core'
 
 import { LocalPathFileDownload, LocalPathFileUpload } from './local-transfers'
 import { SftpConnectionService, SFTPFile, SFTPSessionLike, SSHSessionLike } from './sftp.service'
+import { SFTP_RECOVERY_TYPE } from './sftp-recovery-provider'
 
 type LocalEntry = {
   name: string
@@ -415,6 +417,7 @@ export class SftpManagerTabComponent extends BaseTabComponent implements OnInit 
   // injected from the SSH tab when opened via SFTP-UI button
   sshSession: SSHSessionLike | null = null
   profile: any = null
+  recoveredStub = false
 
   connecting = false
   connected = false
@@ -556,9 +559,9 @@ export class SftpManagerTabComponent extends BaseTabComponent implements OnInit 
     // If there's no live SSH session, this tab was likely restored across
     // restart or opened in an invalid context. Close it immediately to avoid
     // an empty, nameless SFTP tab lingering after restart.
-    if (!this.sshSession) {
+    if (this.recoveredStub || !this.sshSession) {
       try {
-        this.app.closeTab(this)
+        this.app.closeTab((this as any).topmostParent ?? this)
       } catch (e) {
         console.error('[SFTP-UI] Failed to close invalid SFTP tab', e)
       }
@@ -2321,12 +2324,16 @@ export class SftpManagerTabComponent extends BaseTabComponent implements OnInit 
     super.destroy()
   }
 
-  // Prevent Tabby from restoring SFTP-UI tabs across restarts, since they rely
-  // on a live SSH session from a terminal tab.
-  // Typинги допускают RecoveryToken | null, нам достаточно всегда возвращать null.
+  // A custom recovery token ensures that a SplitTab wrapper won't become empty
+  // after restart. On recovery we restore a stub SFTP tab which immediately
+  // closes its `topmostParent` (the SplitTab wrapper).
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  override async getRecoveryToken (_options?: any): Promise<null> {
-    return null
+  override async getRecoveryToken (_options?: any): Promise<RecoveryToken> {
+    return {
+      type: SFTP_RECOVERY_TYPE,
+      version: 1,
+      state: {},
+    }
   }
 
   async confirmDelete (): Promise<void> {
